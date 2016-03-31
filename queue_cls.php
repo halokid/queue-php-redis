@@ -1,5 +1,19 @@
 <?php
 
+// require_once('redis_config.php');
+/**
+function add_queue($que_name, $i, $str) {
+    require_once('redis_config.php');
+    // print_r($rds_cfg);
+    // exit();
+    $rds = new Redis();
+    $rds->connect($rds_cfg['host'], $rds_cfg['port']);
+    $rds->select(9);
+    // $res = $rds->zAdd('aaaa', 'ppopo');
+    $res = $rds->zAdd($que_name, $i, $str);
+    return $res;
+}
+**/
 
 
 class Que{
@@ -9,9 +23,13 @@ class Que{
     public $_rds;
     
     public function init(){
-        require_once('redis_config.php');
+        include(APPPATH.'config/redis.php');
+        // echo APPPATH.'config/redis.php';
+        print_r($config);
+        // exit();
         $rds = new Redis();
-        $rds->connect($rds_cfg['host'], $rds_cfg['port']);
+        print_r($rds);
+        $rds->connect($config['host'], $config['port']);
         $rds->select(9);
         $this->_rds = $rds;
     }
@@ -28,7 +46,11 @@ class Que{
         **/
         
         $this->_rds->select(10);
-        $this->_rds->set($que_name.'_act', $act );
+        $keys = $this->_rds->keys('*');
+        
+        if( !in_array($que_name.'_act', $keys) ) {
+            $this->_rds->set($que_name.'_act', $act );
+        }
     }
 }
 
